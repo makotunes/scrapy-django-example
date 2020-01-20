@@ -1,0 +1,1 @@
+rm -rf python3/mysite/nutrition/migrations

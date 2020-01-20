@@ -1,0 +1,54 @@
+nginx:
+  container_name: nginx
+  build: ./nginx
+  links:
+    - "cms:mypython3"
+  ports:
+    - "80:80"
+    - "3000:3000"
+  volumes:
+    - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro 
+
+scraper:
+  container_name: scraper
+  build: ./python3
+  links:
+    - "maria:mymaria"
+  environment:
+    SCRAPY_START_INDEX: 22419
+    SCRAPY_NUM_ITEMS: 1000
+    SCRAPY_CONCURRENT_ITEMS: 10000
+    SCRAPY_CONCURRENT_REQUESTS: 2
+    SCRAPY_DOWNLOAD_DELAY: 8.0
+  volumes:
+    - ./python3:/usr/src/app
+  entrypoint: /bin/bash
+  stdin_open: true
+  tty: true
+
+cms:
+  container_name: cms
+  build: ./python3
+  links:
+    - "maria:mymaria"
+  environment:
+    DJANGO_ADMIN_USERNAME: root
+    DJANGO_ADMIN_PASSWORD: initpass
+    DJANGO_ADMIN_EMAIL: test@test.com
+  ports:
+    - "8888:8888"
+  volumes:
+    - ./python3:/usr/src/app
+  command: "/usr/src/app/entrypoint.sh"
+  #entrypoint: /bin/bash
+  #stdin_open: true
+  #tty: true
+
+maria:
+  container_name: maria
+  build: ./mariadb
+  environment:
+    MYSQL_ROOT_PASSWORD: password 
+    MYSQL_DATABASE: db
+  volumes:
+    - mysqldb:/var/lib/mysql
